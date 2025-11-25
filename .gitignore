@@ -1,0 +1,33 @@
+data# --- Datos Masivos ---
+# Ignorar toda la carpeta de datasets
+data/
+
+# --- Salidas de Entrenamiento ---
+# Ignorar logs, videos renderizados y checkpoints
+logs/
+*.mp4
+*.gif
+*.png
+
+# --- Modelos Guardados ---
+# No subir los pesos de la red (son pesados)
+*.pth
+*.ckpt
+*.npy
+
+# --- Python ---
+# Archivos compilados y caché
+__pycache__/
+*.pyc
+
+# --- Entornos Virtuales ---
+# Ignorar tu carpeta de entorno conda/venv
+nerf_env/
+env/
+venv/
+.env
+
+# --- IDE y Sistema ---
+.vscode/
+.DS_Store
+Thumbs.db
