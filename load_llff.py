@@ -46,7 +46,7 @@ def _load_data(basedir, factor=None, width=None, height=None, load_imgs=True):
     
     def imread(f):
         if f.endswith('png'):
-            return imageio.imread(f, ignoregamma=True)
+            return imageio.imread(f)
         else:
             return imageio.imread(f)
         
@@ -91,15 +91,15 @@ def render_path_spiral(c2w, up, rads, focal, zdelta, zrate, rots, N):
     return render_poses
 
 def recenter_poses(poses):
-    poses_ = poses+0
-    bottom = np.reshape([0,0,0,1.], [1,4])
+    hwf = poses[:, :3, 4:5]
     c2w = poses_avg(poses)
+    bottom = np.reshape([0,0,0,1.], [1,4])
     c2w = np.concatenate([c2w[:3,:4], bottom], -2)
     bottom = np.tile(np.reshape([0,0,0,1.], [1,1,4]), [poses.shape[0],1,1])
     poses = np.concatenate([poses[:,:3,:4], bottom], -2)
     poses = np.linalg.inv(c2w) @ poses
     poses_ = poses[:,:3,:4]
-    poses = np.concatenate([poses_, poses[...,4:5]], -1)
+    poses = np.concatenate([poses_, hwf], -1)
     return poses
 
 def spherify_poses(poses, bds):

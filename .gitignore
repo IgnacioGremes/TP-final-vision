@@ -1,7 +1,7 @@
 data# --- Datos Masivos ---
 # Ignorar toda la carpeta de datasets
 data/
-
+*.zip
 # --- Salidas de Entrenamiento ---
 # Ignorar logs, videos renderizados y checkpoints
 logs/

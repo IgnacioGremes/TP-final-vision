@@ -29,13 +29,34 @@ def train():
     poses = torch.Tensor(poses).to(device)
     bds = torch.Tensor(bds).to(device)
     
-    H, W, focal = poses[0, :3, -1]
+    H, W = images.shape[1:3]
+        
+    # 2. Obtener la focal original de los metadatos de poses
+    # El formato LLFF guarda [H, W, Focal] en la última columna
+    original_H = poses[0, 0, -1]
+    focal = poses[0, 2, -1]
+    
+    # 3. Escalar la focal si la imagen fue reducida
+    # Si H (378) es menor que original_H (3024), reducimos la focal proporcionalmente
+    if H != original_H:
+        scale_factor = H / original_H
+        focal *= scale_factor
+        print(f"Detectado Downsampling. Nueva Focal: {focal:.2f}")
+
     H, W = int(H), int(W)
-    K = torch.Tensor([[focal, 0, 0.5*W], [0, focal, 0.5*H], [0, 0, 1]]).to(device)
+    
+    # Matriz de Intrínsecos
+    K = torch.Tensor([
+        [focal, 0, 0.5*W], 
+        [0, focal, 0.5*H], 
+        [0, 0, 1]
+    ]).to(device)
     
     print(f"Datos cargados. Imágenes: {images.shape}")
 
-    i_test = [i_test] if isinstance(i_test, int) else i_test
+    # Corrección para manejar numpy.int64
+    if not isinstance(i_test, (list, np.ndarray)):
+        i_test = [i_test]
     i_train = np.array([i for i in np.arange(int(images.shape[0])) if i not in i_test])
 
     # 2. Modelo y Embedders
