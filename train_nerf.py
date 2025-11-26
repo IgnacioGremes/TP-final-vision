@@ -2,8 +2,8 @@ import torch
 import numpy as np
 import os
 import tqdm
-import json  # <--- NUEVO
-import matplotlib.pyplot as plt # <--- NUEVO
+import json  
+import matplotlib.pyplot as plt 
 from nerf_pytorch import Embedder, FastNeRF, raw2outputs, get_rays
 from load_llff import load_llff_data 
 
@@ -15,12 +15,11 @@ CONFIG = {
     'N_iters': 2000,          
     'batch_size': 4096,
     'lrate': 5e-4,
-    'i_val': 500, # <--- Cada cuántas iters validamos una imagen completa
+    'i_val': 500, 
 }
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Función para renderizar una imagen completa por pedacitos (para no llenar la memoria)
 def render_full_image(model, rays_o, rays_d, near, far, embed_pts, embed_views, chunk=32768):
     H, W = rays_o.shape[:2]
     rays_o = rays_o.reshape(-1, 3)
@@ -48,11 +47,11 @@ def render_full_image(model, rays_o, rays_d, near, far, embed_pts, embed_views, 
 
 def train():
     # 1. Cargar Datos
+    print("Cargando datos...")
     images, poses, bds, render_poses, i_test = load_llff_data(
         CONFIG['datadir'], CONFIG['factor'],
         recenter=True, bd_factor=.75, spherify=False)
     
-    # Ajuste de resolución y focal (Corrección que hicimos antes)
     H, W = images.shape[1:3]
     original_H = poses[0, 0, -1]
     focal = poses[0, 2, -1]
@@ -65,12 +64,33 @@ def train():
     poses = torch.Tensor(poses).to(device)
     bds = torch.Tensor(bds).to(device)
 
-    # Separar Validacion (Usamos la imagen holdout 'i_test')
-    if not isinstance(i_test, (list, np.ndarray)): i_test = [i_test]
-    val_idx = i_test[0] # Usaremos esta imagen para calcular PSNR de validación
-    i_train = np.array([i for i in np.arange(int(images.shape[0])) if i not in i_test])
+    # --- LÓGICA DE SEPARACIÓN DE DATOS (CORREGIDA) ---
+    # 1. Validación: Usamos la imagen que load_llff sugiere como test (suele ser #12)
+    if np.ndim(i_test) == 0:
+        val_idx = int(i_test)
+    else:
+        val_idx = int(i_test[0])
 
-    print(f"Entrenando en {len(i_train)} imágenes. Validando en imagen #{val_idx}")
+    # 2. Test Puro: Elegimos manualmente otra imagen (ej: #7)
+    # Esta NO se usará para entrenar ni para validar durante el train.
+    test_idx = 7 
+    
+    # Asegurarnos de no elegir la misma (si val es 7, pasamos a 8)
+    if test_idx == val_idx: 
+        test_idx = (val_idx + 1) % int(images.shape[0])
+
+    print(f"--- CONFIGURACIÓN DE SPLITS ---")
+    print(f"Total Imágenes: {images.shape[0]}")
+    print(f"Validación (Gráfico): Imagen #{val_idx}")
+    print(f"Test Puro (Final):    Imagen #{test_idx}")
+
+    # 3. Entrenamiento: Todas MENOS val_idx y test_idx
+    all_indices = np.arange(int(images.shape[0]))
+    exclude_list = [val_idx, test_idx]
+    i_train = np.array([i for i in all_indices if i not in exclude_list])
+
+    print(f"Entrenando con {len(i_train)} imágenes: {i_train}")
+    # ---------------------------------------------
 
     # 2. Modelo
     embed_pts = Embedder(input_dims=3, num_freqs=10)
@@ -78,13 +98,13 @@ def train():
     model = FastNeRF(D=4, W=128).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=CONFIG['lrate'])
 
-    # 3. Listas para guardar historial
     train_loss_history = []
     val_psnr_history = []
     iter_history = []
 
-    # 4. Loop
+    print("Iniciando entrenamiento...")
     pbar = tqdm.tqdm(range(CONFIG['N_iters']))
+    
     for i in pbar:
         # --- TRAIN STEP ---
         img_idx = np.random.choice(i_train)
@@ -92,7 +112,6 @@ def train():
         pose = poses[img_idx, :3, :4]
         rays_o, rays_d = get_rays(H, W, K, pose)
         
-        # Batching aleatorio
         coords = torch.stack(torch.meshgrid(torch.linspace(0, H-1, H, device=device), torch.linspace(0, W-1, W, device=device), indexing='ij'), -1).reshape(-1, 2)
         select_inds = np.random.choice(coords.shape[0], size=[CONFIG['batch_size']], replace=False)
         select_inds = torch.from_numpy(select_inds).long().to(device)
@@ -100,10 +119,8 @@ def train():
         batch_rays_d = rays_d.reshape(-1, 3)[select_inds]
         target_rgb = target_img.reshape(-1, 3)[select_inds]
         
-        # Rendering
         near, far = bds.min() * 0.9, bds.max() * 1.0
         z_vals = torch.linspace(near, far, CONFIG['N_samples'], device=device).expand(batch_rays_o.shape[0], CONFIG['N_samples'])
-        # Perturbación
         mids = .5 * (z_vals[..., 1:] + z_vals[..., :-1])
         upper = torch.cat([mids, z_vals[..., -1:]], -1)
         lower = torch.cat([z_vals[..., :1], mids], -1)
@@ -123,40 +140,36 @@ def train():
         loss.backward()
         optimizer.step()
 
-        # Guardar loss
         train_loss_history.append(loss.item())
 
-        # --- VALIDATION STEP (Cada X iters) ---
+        # --- VALIDATION STEP (Usando imagen val_idx) ---
         if i % CONFIG['i_val'] == 0 and i > 0:
-            model.eval() # Poner en modo evaluación
+            model.eval()
             with torch.no_grad():
-                # Seleccionar la imagen reservada (Holdout)
                 target_val = images[val_idx]
                 pose_val = poses[val_idx, :3, :4]
                 rays_o_val, rays_d_val = get_rays(H, W, K, pose_val)
                 
-                # Renderizar la imagen completa
-                near, far = bds.min() * 0.9, bds.max() * 1.0
+                # Renderizar imagen completa de validación
                 rgb_val = render_full_image(model, rays_o_val, rays_d_val, near, far, embed_pts, embed_views)
                 
-                # Calcular PSNR real
                 mse = torch.mean((rgb_val - target_val) ** 2)
                 psnr = -10. * torch.log10(mse)
                 
                 val_psnr_history.append(psnr.item())
                 iter_history.append(i)
                 pbar.set_description(f"PSNR: {psnr.item():.2f}")
-            model.train() # Volver a modo entrenamiento
+            model.train()
 
-    # 5. Guardar todo al final
     os.makedirs('./logs', exist_ok=True)
     torch.save(model.state_dict(), f"./logs/{CONFIG['expname']}.pth")
     
-    # Guardar métricas en JSON
     metrics = {
         'loss': train_loss_history,
         'psnr': val_psnr_history,
-        'iters': iter_history
+        'iters': iter_history,
+        'val_idx': val_idx,   # Guardamos qué imágenes usamos
+        'test_idx': test_idx
     }
     with open(f"./logs/{CONFIG['expname']}_metrics.json", 'w') as f:
         json.dump(metrics, f)
