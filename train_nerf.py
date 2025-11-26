@@ -12,13 +12,39 @@ CONFIG = {
     'datadir': './data/nerf_llff_data/fern',
     'factor': 8,      
     'N_samples': 64,
-    'N_iters': 50000,          
+    'N_iters': 2000,          
     'batch_size': 4096,
     'lrate': 5e-4,
-    'i_val': 1000, # <--- Cada cuántas iters validamos una imagen completa
+    'i_val': 500, # <--- Cada cuántas iters validamos una imagen completa
 }
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# Función para renderizar una imagen completa por pedacitos (para no llenar la memoria)
+def render_full_image(model, rays_o, rays_d, near, far, embed_pts, embed_views, chunk=32768):
+    H, W = rays_o.shape[:2]
+    rays_o = rays_o.reshape(-1, 3)
+    rays_d = rays_d.reshape(-1, 3)
+    rgb_frames = []
+    
+    for i in range(0, rays_o.shape[0], chunk):
+        batch_rays_o = rays_o[i:i+chunk]
+        batch_rays_d = rays_d[i:i+chunk]
+        
+        z_vals = torch.linspace(near, far, 64, device=device).expand(batch_rays_o.shape[0], 64)
+        pts = batch_rays_o[...,None,:] + batch_rays_d[...,None,:] * z_vals[...,:,None]
+        viewdirs = batch_rays_d / torch.norm(batch_rays_d, dim=-1, keepdim=True)
+        viewdirs = viewdirs[:,None].expand(pts.shape)
+        
+        embedded = torch.cat([embed_pts.embed(pts.reshape(-1,3)), embed_views.embed(viewdirs.reshape(-1,3))], -1)
+        
+        with torch.no_grad():
+            raw = model(embedded).reshape(batch_rays_o.shape[0], 64, 4)
+            rgb_map, _, _ = raw2outputs(raw, z_vals, batch_rays_d)
+            
+        rgb_frames.append(rgb_map)
+        
+    return torch.cat(rgb_frames, 0).reshape(H, W, 3)
 
 def train():
     # 1. Cargar Datos
@@ -102,17 +128,25 @@ def train():
 
         # --- VALIDATION STEP (Cada X iters) ---
         if i % CONFIG['i_val'] == 0 and i > 0:
+            model.eval() # Poner en modo evaluación
             with torch.no_grad():
-                # Renderizar SOLO el píxel central de la imagen de validación para estimar rápido
-                # O renderizar una versión muy pequeña para no tardar. 
-                # Para hacerlo simple y rápido, usaremos el loss del batch actual como proxy visual
-                # pero LO CORRECTO es renderizar la imagen de validacion.
+                # Seleccionar la imagen reservada (Holdout)
+                target_val = images[val_idx]
+                pose_val = poses[val_idx, :3, :4]
+                rays_o_val, rays_d_val = get_rays(H, W, K, pose_val)
                 
-                # Vamos a calcular PSNR sobre el batch de entrenamiento (más rápido)
-                psnr = -10. * torch.log10(loss)
+                # Renderizar la imagen completa
+                near, far = bds.min() * 0.9, bds.max() * 1.0
+                rgb_val = render_full_image(model, rays_o_val, rays_d_val, near, far, embed_pts, embed_views)
+                
+                # Calcular PSNR real
+                mse = torch.mean((rgb_val - target_val) ** 2)
+                psnr = -10. * torch.log10(mse)
+                
                 val_psnr_history.append(psnr.item())
                 iter_history.append(i)
                 pbar.set_description(f"PSNR: {psnr.item():.2f}")
+            model.train() # Volver a modo entrenamiento
 
     # 5. Guardar todo al final
     os.makedirs('./logs', exist_ok=True)
