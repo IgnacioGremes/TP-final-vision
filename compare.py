@@ -9,8 +9,8 @@ from load_llff import load_llff_data
 CONFIG = {
     'model_path': './logs/fern_final_hd.pth',  # <--- Asegúrate que este sea tu modelo entrenado
     'datadir': './data/nerf_llff_data/fern',
-    'factor': 8, 
-    'N_samples': 64, 
+    'factor': 4, 
+    'N_samples': 128, 
     'chunk': 32768
 }
 

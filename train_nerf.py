@@ -10,12 +10,14 @@ from load_llff import load_llff_data
 CONFIG = {
     'expname': 'fern_final_hd', 
     'datadir': './data/nerf_llff_data/fern',
-    'factor': 8,      
-    'N_samples': 64,
-    'N_iters': 2000,          
+    'factor': 4,      
+    'N_samples': 128,
+    'N_iters': 10000,          
     'batch_size': 4096,
     'lrate': 5e-4,
-    'i_val': 500, 
+    'i_val': 500,
+    'layers': 4,
+    'neurons': 128 
 }
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -95,7 +97,7 @@ def train():
     # 2. Modelo
     embed_pts = Embedder(input_dims=3, num_freqs=10)
     embed_views = Embedder(input_dims=3, num_freqs=4)
-    model = FastNeRF(D=4, W=128).to(device)
+    model = FastNeRF(D=CONFIG['layers'], W=CONFIG['neurons']).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=CONFIG['lrate'])
 
     train_loss_history = []

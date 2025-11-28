@@ -1,0 +1,106 @@
+Las imagenes de mayor resolucion tardan mas en converger, por lo tanto requieren mas iteraciones para obtener buenos resultados.
+Teneiendo en cuenta que se usan los mismos hiperparametros 
+
+Como segundo set de imagenes usar el de cuernos(triceraptops) ya qu tiene 40 imagenes y en teoria si usamos mas imagenes, la calidad
+de la prediccion deberia ser peor, y el tiempo de entrenamiento no aumenta, debido a que la cantidad de rayos que tira el metodo de 
+sampleo es random, por lo tanto la cant de rayos es la misma pero hay menos rayos por imagen (prespectiva) entonces la calidad va a ser
+peor
+
+Checklist: (GUARDAR LAS IMAGENES DE COMPARE, LOS GRAFICOS Y VIDEO DE ALGUNOS QUE SE NOTE CAMBIO SIGNIFICATIVO)
+
+ NO HECHO
+-   'factor': 8,      
+    'N_samples': 64,
+    'N_iters': 10000,          
+    'batch_size': 4096,
+    'lrate': 5e-4,
+    'i_val': 500,
+    'layers': 4,
+    'neurons': 128 
+    psnr = 
+
+
+ NO HECHO
+-   'factor': 4,      
+    'N_samples': 128,
+    'N_iters': 10000,          
+    'batch_size': 4096,
+    'lrate': 5e-4,
+    'i_val': 500,
+    'layers': 4,
+    'neurons': 128 
+    psnr = 
+
+NO HECHO
+-   'factor': 4,      
+    'N_samples': 128,
+    'N_iters': 50000,          
+    'batch_size': 4096,
+    'lrate': 5e-4,
+    'i_val': 500,
+    'layers': 4,
+    'neurons': 128 
+    psnr = 
+
+NO HECHO
+-   'factor': 4,      
+    'N_samples': 128,
+    'N_iters': 10000,          
+    'batch_size': 4096,
+    'lrate': 5e-4,
+    'i_val': 500,
+    'layers': 8,
+    'neurons': 128 
+    psnr = 
+
+NO HECHO
+-   'factor': 4,      
+    'N_samples': 128,
+    'N_iters': 200 000,          
+    'batch_size': 4096,
+    'lrate': 5e-4,
+    'i_val': 500,
+    'layers': 4,
+    'neurons': 128 
+    psnr = 
+
+ NO HECHO (100 000 EN VEZ DE 200 000 PORQUE PROBLABLEMENTE YA NO MEJORE MAS A PARTIR DE CIERTO PUNTO)
+-   'factor': 8,      
+    'N_samples': 64,
+    'N_iters': 100 000,          
+    'batch_size': 4096,
+    'lrate': 5e-4,
+    'i_val': 500,
+    'layers': 4,
+    'neurons': 128 
+    psnr = 
+
+ NO HECHO (PROBAR DISTINTOS LEARN RATE PARA VER SI AFECTA MUCHO O NO)
+-   'factor': 8,      
+    'N_samples': 64,
+    'N_iters': 10000,          
+    'batch_size': 4096,
+    'lrate': IDEALMENTE MAS GRANDES QUE 5e-4,
+    'i_val': 500,
+    'layers': 4,
+    'neurons': 128 
+    psnr = 
+
+NO HECHO (VER CUANTO TIEMPO TARDA EN ENTRENAR ESTE, SI TARDA MUCHO NO LO HACEMOS)
+-   'factor': 4,      
+    'N_samples': 128,
+    'N_iters': 10000,          
+    'batch_size': 4096,
+    'lrate': 5e-4,
+    'i_val': 500,
+    'layers': 8,
+    'neurons': 256 
+    psnr = 
+
+
+
+
+
+
+
+
