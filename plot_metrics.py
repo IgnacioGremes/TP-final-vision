@@ -5,9 +5,8 @@ import numpy as np
 
 # --- CONFIGURACIÓN ---
 # Asegúrate de que este nombre coincida con el que usaste en train_nerf.py
-EXPNAME = 'fern_final_hd' 
-JSON_PATH = f'./logs/{EXPNAME}_metrics.json'
-OUTPUT_PATH = f'./logs/{EXPNAME}_curves.png'
+JSON_PATH = f'./logs/modelo_metrics.json'
+OUTPUT_PATH = f'./logs/metric_curves.png'
 
 def moving_average(data, window_size=100):
     """Suaviza la curva de Loss para que se vea más limpia"""
