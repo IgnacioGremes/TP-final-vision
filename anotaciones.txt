@@ -103,7 +103,7 @@ Checklist: (GUARDAR LAS IMAGENES DE COMPARE, LOS GRAFICOS Y VIDEO DE ALGUNOS QUE
     'N_iters': 100 000,          
     'batch_size': 4096,
     'lrate': 5e-4,
-    'i_val': 500,
+    'i_val': 1000,
     'layers': 8,
     'neurons': 256 
     psnr = 
