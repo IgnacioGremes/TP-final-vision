@@ -8,9 +8,9 @@ from load_llff import load_llff_data
 
 # --- CONFIGURACIÓN (Debe coincidir con el entrenamiento) ---
 CONFIG = {
-    'model_path': './logs/fern_final_hd.pth', # <--- ASEGURA QUE ESTE NOMBRE COINCIDA CON TU ARCHIVO GUARDADO
+    'model_path': './logs/pesos_modelo.pth', # <--- ASEGURA QUE ESTE NOMBRE COINCIDA CON TU ARCHIVO GUARDADO
     'datadir': './data/nerf_llff_data/fern',
-    'factor': 4,       
+    'factor': 8,       
     'N_samples': 128,
     'chunk': 16384,     # Cantidad de rayos a procesar a la vez (para no llenar la memoria)
 }
