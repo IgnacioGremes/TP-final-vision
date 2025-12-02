@@ -8,7 +8,7 @@ peor
 
 Checklist: (GUARDAR LAS IMAGENES DE COMPARE, LOS GRAFICOS Y VIDEO DE ALGUNOS QUE SE NOTE CAMBIO SIGNIFICATIVO)
 
-1) NO HECHO
+1) HECHO igna
 -   'factor': 8,      
     'N_samples': 128,
     'N_iters': 10000,          
