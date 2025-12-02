@@ -8,7 +8,7 @@ peor
 
 Checklist: (GUARDAR LAS IMAGENES DE COMPARE, LOS GRAFICOS Y VIDEO DE ALGUNOS QUE SE NOTE CAMBIO SIGNIFICATIVO)
 
- NO HECHO
+1) NO HECHO
 -   'factor': 8,      
     'N_samples': 64,
     'N_iters': 10000,          
@@ -20,7 +20,7 @@ Checklist: (GUARDAR LAS IMAGENES DE COMPARE, LOS GRAFICOS Y VIDEO DE ALGUNOS QUE
     psnr = 
 
 
- NO HECHO
+2) NO HECHO
 -   'factor': 4,      
     'N_samples': 128,
     'N_iters': 10000,          
@@ -31,7 +31,7 @@ Checklist: (GUARDAR LAS IMAGENES DE COMPARE, LOS GRAFICOS Y VIDEO DE ALGUNOS QUE
     'neurons': 128 
     psnr = 
 
-NO HECHO
+3) NO HECHO
 -   'factor': 4,      
     'N_samples': 128,
     'N_iters': 50000,          
@@ -42,7 +42,7 @@ NO HECHO
     'neurons': 128 
     psnr = 
 
-NO HECHO
+4) NO HECHO
 -   'factor': 4,      
     'N_samples': 128,
     'N_iters': 10000,          
@@ -53,7 +53,7 @@ NO HECHO
     'neurons': 128 
     psnr = 
 
-NO HECHO
+ 5) NO HECHO
 -   'factor': 4,      
     'N_samples': 128,
     'N_iters': 200 000,          
@@ -64,7 +64,7 @@ NO HECHO
     'neurons': 128 
     psnr = 
 
- NO HECHO (100 000 EN VEZ DE 200 000 PORQUE PROBLABLEMENTE YA NO MEJORE MAS A PARTIR DE CIERTO PUNTO)
+ 6) NO HECHO (100 000 EN VEZ DE 200 000 PORQUE PROBLABLEMENTE YA NO MEJORE MAS A PARTIR DE CIERTO PUNTO)
 -   'factor': 8,      
     'N_samples': 64,
     'N_iters': 100 000,          
@@ -75,7 +75,7 @@ NO HECHO
     'neurons': 128 
     psnr = 
 
- NO HECHO (PROBAR DISTINTOS LEARN RATE PARA VER SI AFECTA MUCHO O NO)
+ 7) NO HECHO (PROBAR DISTINTOS LEARN RATE PARA VER SI AFECTA MUCHO O NO)
 -   'factor': 8,      
     'N_samples': 64,
     'N_iters': 10000,          
@@ -86,7 +86,7 @@ NO HECHO
     'neurons': 128 
     psnr = 
 
-NO HECHO (VER CUANTO TIEMPO TARDA EN ENTRENAR ESTE, SI TARDA MUCHO NO LO HACEMOS)
+8) NO HECHO (VER CUANTO TIEMPO TARDA EN ENTRENAR ESTE, SI TARDA MUCHO NO LO HACEMOS)
 -   'factor': 4,      
     'N_samples': 128,
     'N_iters': 10000,          
