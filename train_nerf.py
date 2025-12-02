@@ -8,16 +8,16 @@ from nerf_pytorch import Embedder, FastNeRF, raw2outputs, get_rays
 from load_llff import load_llff_data 
 
 CONFIG = {
-    'expname': 'fern_final_hd', 
+    'expname': 'pesos_modelo', 
     'datadir': './data/nerf_llff_data/fern',
-    'factor': 4,      
+    'factor': 2,      
     'N_samples': 128,
-    'N_iters': 10000,          
+    'N_iters': 200000,          
     'batch_size': 4096,
     'lrate': 5e-4,
-    'i_val': 500,
-    'layers': 4,
-    'neurons': 128 
+    'i_val': 2000,
+    'layers': 8,
+    'neurons': 256 
 }
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -173,7 +173,7 @@ def train():
         'val_idx': val_idx,   # Guardamos qué imágenes usamos
         'test_idx': test_idx
     }
-    with open(f"./logs/{CONFIG['expname']}_metrics.json", 'w') as f:
+    with open(f"./logs/modelo_metrics.json", 'w') as f:
         json.dump(metrics, f)
         
     print("Entrenamiento finalizado. Métricas guardadas en json.")
