@@ -7,9 +7,9 @@ from load_llff import load_llff_data
 
 # --- CONFIGURACIÓN ---
 CONFIG = {
-    'model_path': './logs/fern_final_hd.pth',  # <--- Asegúrate que este sea tu modelo entrenado
+    'model_path': './logs/pesos_modelo.pth',  # <--- Asegúrate que este sea tu modelo entrenado
     'datadir': './data/nerf_llff_data/fern',
-    'factor': 4, 
+    'factor': 8, 
     'N_samples': 128, 
     'chunk': 32768
 }
@@ -96,7 +96,7 @@ def run_compare():
     indices_to_plot = {
         'Train_View': i_train[0],       # Una que ya vio (debe verse perfecta)
         'Validation_View': val_idx,     # La del gráfico (debe verse muy bien)
-        'TEST_PURO_View': test_idx      # La prueba de fuego (nunca vista)
+        'Test_View': test_idx      # La prueba de fuego (nunca vista)
     }
     
     # Si hay más de una imagen de test, agregamos otra
