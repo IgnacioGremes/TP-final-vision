@@ -20,7 +20,7 @@ Checklist: (GUARDAR LAS IMAGENES DE COMPARE, LOS GRAFICOS Y VIDEO DE ALGUNOS QUE
     psnr = 
 
 
-2) NO HECHO
+2) NO HECHO (20 min)
 -   'factor': 4,      
     'N_samples': 128,
     'N_iters': 10000,          
@@ -31,7 +31,7 @@ Checklist: (GUARDAR LAS IMAGENES DE COMPARE, LOS GRAFICOS Y VIDEO DE ALGUNOS QUE
     'neurons': 128 
     psnr = 
 
-3) NO HECHO
+3) NO HECHO (1hora 40 min)
 -   'factor': 4,      
     'N_samples': 128,
     'N_iters': 50000,          
@@ -42,7 +42,7 @@ Checklist: (GUARDAR LAS IMAGENES DE COMPARE, LOS GRAFICOS Y VIDEO DE ALGUNOS QUE
     'neurons': 128 
     psnr = 
 
-4) NO HECHO
+4) NO HECHO (30 min)
 -   'factor': 4,      
     'N_samples': 128,
     'N_iters': 10000,          
@@ -53,7 +53,7 @@ Checklist: (GUARDAR LAS IMAGENES DE COMPARE, LOS GRAFICOS Y VIDEO DE ALGUNOS QUE
     'neurons': 128 
     psnr = 
 
- 5) NO HECHO
+ 5) NO HECHO (6 horas 40min)
 -   'factor': 4,      
     'N_samples': 128,
     'N_iters': 200 000,          
@@ -64,10 +64,10 @@ Checklist: (GUARDAR LAS IMAGENES DE COMPARE, LOS GRAFICOS Y VIDEO DE ALGUNOS QUE
     'neurons': 128 
     psnr = 
 
- 6) NO HECHO (100 000 EN VEZ DE 200 000 PORQUE PROBLABLEMENTE YA NO MEJORE MAS A PARTIR DE CIERTO PUNTO)
+ 6) NO HECHO (100 000 EN VEZ DE 200 000 PORQUE PROBLABLEMENTE YA NO MEJORE MAS A PARTIR DE CIERTO PUNTO) (6 horas)
 -   'factor': 8,      
     'N_samples': 128,
-    'N_iters': 100 000,          
+    'N_iters': 200 000,          
     'batch_size': 4096,
     'lrate': 5e-4,
     'i_val': 500,
@@ -86,10 +86,21 @@ Checklist: (GUARDAR LAS IMAGENES DE COMPARE, LOS GRAFICOS Y VIDEO DE ALGUNOS QUE
     'neurons': 128 
     psnr = 
 
-8) NO HECHO (VER CUANTO TIEMPO TARDA EN ENTRENAR ESTE, SI TARDA MUCHO NO LO HACEMOS)
+8) NO HECHO (1 hora)
 -   'factor': 4,      
     'N_samples': 128,
     'N_iters': 10000,          
+    'batch_size': 4096,
+    'lrate': 5e-4,
+    'i_val': 500,
+    'layers': 8,
+    'neurons': 256 
+    psnr = 
+
+9) NO HECHO (11 horas)
+-   'factor': 4,      
+    'N_samples': 128,
+    'N_iters': 100 000,          
     'batch_size': 4096,
     'lrate': 5e-4,
     'i_val': 500,
