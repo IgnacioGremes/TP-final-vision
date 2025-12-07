@@ -173,25 +173,39 @@ def load_llff_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=Fal
         c2w = poses_avg(poses)
         print('recentered', c2w.shape)
         print(c2w[:3,:4])
-        
-        # --- CORRECCIÓN AQUÍ ---
-        # Definimos close_depth usando los límites (bounds) cargados
-        close_depth = bds.min() * .9
-        # -----------------------
 
-        # Generate spiral path for rendering video
+        ## Get spiral
+        # Get average pose
         up = normalize(poses[:, :3, 1].sum(0))
-        rads = np.percentile(np.abs(poses[:, :3, 3]), 90, 0)
+
+        # --- CÁLCULO ORIGINAL DE PROFUNDIDAD Y FOCO ---
+        # Find a reasonable "focus depth" for this dataset
+        close_depth, inf_depth = bds.min()*.9, bds.max()*5.
+        dt = .75
+        mean_dz = 1./(((1.-dt)/close_depth + dt/inf_depth))
+        focal = mean_dz
+        # ----------------------------------------------
+
+        # Get radii for spiral path
+        shrink_factor = .8 # No se usa explícitamente en el original para rads, pero estaba definido
+        zdelta = close_depth * .2 # Restauramos el movimiento vertical original
+        
+        tt = poses[:,:3,3] 
+        rads = np.percentile(np.abs(tt), 90, 0)
         c2w_path = c2w
         N_views = 120
         N_rots = 2
+        
         if path_zflat:
             zloc = -close_depth * .1
             c2w_path[:3,3] = c2w_path[:3,3] + zloc * c2w_path[:3,2]
             rads[2] = 0.
             N_rots = 1
             N_views /= 2
-        render_poses = render_path_spiral(c2w_path, up, rads, focal=1, zdelta=0, zrate=.5, rots=N_rots, N=N_views)   
+
+        # Generate poses for spiral path
+        # NOTA: Pasamos 'focal' calculado y 'zdelta' calculado en lugar de 1 y 0
+        render_poses = render_path_spiral(c2w_path, up, rads, focal, zdelta, zrate=.5, rots=N_rots, N=N_views)   
     
     render_poses = np.array(render_poses).astype(np.float32)
     c2w = poses_avg(poses)
