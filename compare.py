@@ -5,12 +5,11 @@ import os
 from nerf_pytorch import Embedder, FastNeRF, raw2outputs, get_rays
 from load_llff import load_llff_data
 
-# --- CONFIGURACIÓN ---
 CONFIG = {
-    'model_path': './logs/pesos_modelo.pth',  # <--- Asegúrate que este sea tu modelo entrenado
+    'model_path': './logs/pesos_modelo.pth',
     'datadir': './data/nerf_llff_data/fern',
-    'factor': 4, 
-    'N_samples': 128, 
+    'factor': 4,
+    'N_samples': 128,
     'chunk': 32768,
     'layers': 8,
     'neurons': 256
@@ -60,22 +59,19 @@ def save_comparison(target, pred, title, filename):
     plt.tight_layout()
     plt.savefig(filename, bbox_inches='tight', dpi=150)
     plt.close()
-    print(f"✅ Guardado: {filename}")
+    print(f"OK Guardado: {filename}")
 
 def run_compare():
     print(f"--- GENERANDO COMPARACIONES PARA {CONFIG['expname'] if 'expname' in CONFIG else 'MODELO'} ---")
     
-    # 1. Cargar datos
     images, poses, bds, _, i_test = load_llff_data(
         CONFIG['datadir'], CONFIG['factor'], recenter=True, bd_factor=.75, spherify=False)
     
-    # Manejo de índices train/test
     if not isinstance(i_test, (list, np.ndarray)): i_test = [i_test]
     val_idx = int(i_test[0])
-    test_idx = 7  # <--- La imagen secreta
+    test_idx = 7
     i_train = np.array([i for i in np.arange(int(images.shape[0])) if i not in i_test])
 
-    # Ajuste de resolución y focal
     H, W = images.shape[1:3]
     original_H = poses[0, 0, -1]
     focal = poses[0, 2, -1]
@@ -84,28 +80,23 @@ def run_compare():
     K = torch.Tensor([[focal, 0, 0.5*W], [0, focal, 0.5*H], [0, 0, 1]]).to(device)
     near, far = bds.min() * 0.9, bds.max() * 1.0
 
-    # 2. Cargar Modelo
     embed_pts = Embedder(3, 10); embed_views = Embedder(3, 4)
     model = FastNeRF(CONFIG['layers'], CONFIG['neurons']).to(device)
     if os.path.exists(CONFIG['model_path']):
         model.load_state_dict(torch.load(CONFIG['model_path'], map_location=device))
     else:
-        print("❌ ERROR: Modelo no encontrado."); return
+        print("X ERROR: Modelo no encontrado."); return
     model.eval()
 
-    # 3. Definir qué imágenes vamos a comparar
-    # Seleccionamos 2 de train (ej. la primera y una del medio) y todas las de test
     indices_to_plot = {
-        'Train_View': i_train[0],       # Una que ya vio (debe verse perfecta)
-        'Validation_View': val_idx,     # La del gráfico (debe verse muy bien)
-        'Test_View': test_idx      # La prueba de fuego (nunca vista)
+        'Train_View': i_train[0],
+        'Validation_View': val_idx,
+        'Test_View': test_idx
     }
     
-    # Si hay más de una imagen de test, agregamos otra
     if len(i_test) > 1:
         indices_to_plot['Test_View_1'] = i_test[1]
 
-    # 4. Loop de generación
     for name, idx in indices_to_plot.items():
         print(f"Renderizando {name} (Imagen #{idx})...")
         target = images[idx]

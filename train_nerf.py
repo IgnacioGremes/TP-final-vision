@@ -48,7 +48,6 @@ def render_full_image(model, rays_o, rays_d, near, far, embed_pts, embed_views, 
     return torch.cat(rgb_frames, 0).reshape(H, W, 3)
 
 def train():
-    # 1. Cargar Datos
     print("Cargando datos...")
     images, poses, bds, render_poses, i_test = load_llff_data(
         CONFIG['datadir'], CONFIG['factor'],
@@ -66,18 +65,13 @@ def train():
     poses = torch.Tensor(poses).to(device)
     bds = torch.Tensor(bds).to(device)
 
-    # --- LÓGICA DE SEPARACIÓN DE DATOS (CORREGIDA) ---
-    # 1. Validación: Usamos la imagen que load_llff sugiere como test (suele ser #12)
     if np.ndim(i_test) == 0:
         val_idx = int(i_test)
     else:
         val_idx = int(i_test[0])
 
-    # 2. Test Puro: Elegimos manualmente otra imagen (ej: #7)
-    # Esta NO se usará para entrenar ni para validar durante el train.
     test_idx = 7 
     
-    # Asegurarnos de no elegir la misma (si val es 7, pasamos a 8)
     if test_idx == val_idx: 
         test_idx = (val_idx + 1) % int(images.shape[0])
 
@@ -86,15 +80,12 @@ def train():
     print(f"Validación (Gráfico): Imagen #{val_idx}")
     print(f"Test Puro (Final):    Imagen #{test_idx}")
 
-    # 3. Entrenamiento: Todas MENOS val_idx y test_idx
     all_indices = np.arange(int(images.shape[0]))
     exclude_list = [val_idx, test_idx]
     i_train = np.array([i for i in all_indices if i not in exclude_list])
 
     print(f"Entrenando con {len(i_train)} imágenes: {i_train}")
-    # ---------------------------------------------
 
-    # 2. Modelo
     embed_pts = Embedder(input_dims=3, num_freqs=10)
     embed_views = Embedder(input_dims=3, num_freqs=4)
     model = FastNeRF(D=CONFIG['layers'], W=CONFIG['neurons']).to(device)
@@ -108,7 +99,6 @@ def train():
     pbar = tqdm.tqdm(range(CONFIG['N_iters']))
     
     for i in pbar:
-        # --- TRAIN STEP ---
         img_idx = np.random.choice(i_train)
         target_img = images[img_idx]
         pose = poses[img_idx, :3, :4]
@@ -144,7 +134,6 @@ def train():
 
         train_loss_history.append(loss.item())
 
-        # --- VALIDATION STEP (Usando imagen val_idx) ---
         if i % CONFIG['i_val'] == 0 and i > 0:
             model.eval()
             with torch.no_grad():
@@ -152,7 +141,6 @@ def train():
                 pose_val = poses[val_idx, :3, :4]
                 rays_o_val, rays_d_val = get_rays(H, W, K, pose_val)
                 
-                # Renderizar imagen completa de validación
                 rgb_val = render_full_image(model, rays_o_val, rays_d_val, near, far, embed_pts, embed_views)
                 
                 mse = torch.mean((rgb_val - target_val) ** 2)
@@ -170,7 +158,7 @@ def train():
         'loss': train_loss_history,
         'psnr': val_psnr_history,
         'iters': iter_history,
-        'val_idx': val_idx,   # Guardamos qué imágenes usamos
+        'val_idx': val_idx,
         'test_idx': test_idx
     }
     with open(f"./logs/modelo_metrics.json", 'w') as f:

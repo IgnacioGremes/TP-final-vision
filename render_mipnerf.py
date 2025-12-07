@@ -20,7 +20,6 @@ CONFIG = {
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def get_rays_mip_render(H, W, K, c2w):
-    # Misma lógica que en train
     i, j = torch.meshgrid(torch.linspace(0, W-1, W, device=c2w.device), 
                           torch.linspace(0, H-1, H, device=c2w.device), indexing='xy')
     dirs = torch.stack([(i-K[0][2])/K[0][0], -(j-K[1][2])/K[1][1], -torch.ones_like(i)], -1)

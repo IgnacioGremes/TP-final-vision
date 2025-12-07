@@ -1,7 +1,6 @@
 import numpy as np
 import os, imageio
 
-# Función para cargar las poses y límites
 def _load_data(basedir, factor=None, width=None, height=None, load_imgs=True):
     poses_arr = np.load(os.path.join(basedir, 'poses_bounds.npy'))
     poses = poses_arr[:, :-2].reshape([-1, 3, 5]).transpose([1, 2, 0])
@@ -152,14 +151,12 @@ def load_llff_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=Fal
     poses, bds, imgs = _load_data(basedir, factor=factor) 
     print('Loaded', basedir, bds.min(), bds.max())
     
-    # Correct rotation matrix ordering and move variable dim to last axis
     poses = np.concatenate([poses[:, 1:2, :], -poses[:, 0:1, :], poses[:, 2:, :]], 1)
     poses = np.moveaxis(poses, -1, 0).astype(np.float32)
     imgs = np.moveaxis(imgs, -1, 0).astype(np.float32)
     images = imgs
     bds = np.moveaxis(bds, -1, 0).astype(np.float32)
     
-    # Rescale if bd_factor is provided
     sc = 1. if bd_factor is None else 1./(bds.min() * bd_factor)
     poses[:,:3,3] *= sc
     bds *= sc
@@ -174,21 +171,14 @@ def load_llff_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=Fal
         print('recentered', c2w.shape)
         print(c2w[:3,:4])
 
-        ## Get spiral
-        # Get average pose
         up = normalize(poses[:, :3, 1].sum(0))
 
-        # --- CÁLCULO ORIGINAL DE PROFUNDIDAD Y FOCO ---
-        # Find a reasonable "focus depth" for this dataset
         close_depth, inf_depth = bds.min()*.9, bds.max()*5.
         dt = .75
         mean_dz = 1./(((1.-dt)/close_depth + dt/inf_depth))
         focal = mean_dz
-        # ----------------------------------------------
 
-        # Get radii for spiral path
-        shrink_factor = .8 # No se usa explícitamente en el original para rads, pero estaba definido
-        zdelta = close_depth * .2 # Restauramos el movimiento vertical original
+        zdelta = close_depth * .2
         
         tt = poses[:,:3,3] 
         rads = np.percentile(np.abs(tt), 90, 0)
@@ -203,8 +193,6 @@ def load_llff_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=Fal
             N_rots = 1
             N_views /= 2
 
-        # Generate poses for spiral path
-        # NOTA: Pasamos 'focal' calculado y 'zdelta' calculado en lugar de 1 y 0
         render_poses = render_path_spiral(c2w_path, up, rads, focal, zdelta, zrate=.5, rots=N_rots, N=N_views)   
     
     render_poses = np.array(render_poses).astype(np.float32)
@@ -221,7 +209,6 @@ def load_llff_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=Fal
     return images, poses, bds, render_poses, i_test
 
 def _minify(basedir, factors=[], resolutions=[]):
-    # This function is usually used to resize images using mogrify (ImageMagick).
-    # Since you already have images_4 and images_8 folders in your screenshot,
-    # we can leave this empty or minimal to avoid errors if the folders exist.
+    # Se suele usar para reducir el tamaño de las imágenes
+    # Como no es necesario para el propósito actual, lo dejamos vacío
     pass

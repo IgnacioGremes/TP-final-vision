@@ -3,18 +3,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
-# --- 1. POSITIONAL ENCODING (OPTIMIZADO) ---
 class Embedder:
     def __init__(self, input_dims=3, num_freqs=10, include_input=True):
         self.input_dims = input_dims
         self.num_freqs = num_freqs
         self.include_input = include_input
-        # Creamos las bandas pero NO las registramos como parámetro para no entrenarlas
-        # Se moverán a GPU dinámicamente en el forward
         self.freq_bands = 2.**torch.linspace(0., num_freqs - 1, num_freqs)
 
     def embed(self, inputs):
-        # OPTIMIZACIÓN CRÍTICA: Asegurar que las frecuencias estén en el mismo dispositivo que el input
         if self.freq_bands.device != inputs.device:
             self.freq_bands = self.freq_bands.to(inputs.device)
 
@@ -22,14 +18,12 @@ class Embedder:
         if self.include_input:
             embed_list.append(inputs)
         
-        # Broadcasting eficiente
         for freq in self.freq_bands:
             embed_list.append(torch.sin(inputs * freq))
             embed_list.append(torch.cos(inputs * freq))
             
         return torch.cat(embed_list, dim=-1)
 
-# --- 2. MODELO NERF ---
 class FastNeRF(nn.Module):
     def __init__(self, D=4, W=128, input_ch=63, input_ch_views=27):
         super(FastNeRF, self).__init__()
@@ -41,7 +35,6 @@ class FastNeRF(nn.Module):
         self.rgb_linear = nn.Linear(W // 2, 3)
 
     def forward(self, x):
-        # Split optimizado
         input_pts, input_views = torch.split(x, [63, 27], dim=-1)
         h = input_pts
         for l in self.pts_linears:
@@ -54,10 +47,8 @@ class FastNeRF(nn.Module):
         rgb = self.rgb_linear(h)
         return torch.cat([rgb, alpha], -1)
 
-# --- 3. RENDERIZADO VOLUMÉTRICO ---
 def raw2outputs(raw, z_vals, rays_d, raw_noise_std=0, white_bkgd=False):
     dists = z_vals[..., 1:] - z_vals[..., :-1]
-    # Usar valores grandes en float32
     dists = torch.cat([dists, torch.tensor([1e10], device=dists.device).expand(dists[...,:1].shape)], -1)
     dists = dists * torch.norm(rays_d[...,None,:], dim=-1)
 
@@ -69,7 +60,6 @@ def raw2outputs(raw, z_vals, rays_d, raw_noise_std=0, white_bkgd=False):
     sigma = F.relu(raw[...,3] + noise)
     alpha = 1.0 - torch.exp(-sigma * dists)
     
-    # Cumprod exclusivo para transmitancia
     weights = alpha * torch.cumprod(torch.cat([torch.ones((alpha.shape[0], 1), device=alpha.device), 1.-alpha + 1e-10], -1), -1)[:, :-1]
     
     rgb_map = torch.sum(weights[...,None] * rgb, -2)
@@ -81,7 +71,6 @@ def raw2outputs(raw, z_vals, rays_d, raw_noise_std=0, white_bkgd=False):
 
     return rgb_map, depth_map, acc_map
 
-# --- 4. GENERAR RAYOS ---
 def get_rays(H, W, K, c2w):
     i, j = torch.meshgrid(torch.linspace(0, W-1, W, device=c2w.device), torch.linspace(0, H-1, H, device=c2w.device), indexing='xy')
     dirs = torch.stack([(i-K[0][2])/K[0][0], -(j-K[1][2])/K[1][1], -torch.ones_like(i)], -1)
