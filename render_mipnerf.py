@@ -12,8 +12,8 @@ CONFIG = {
     'factor': 4,
     'N_samples': 128,
     'chunk': 4096,
-    'layers': 4,
-    'neurons': 128
+    'layers': 8,
+    'neurons': 256
 
 }
 
