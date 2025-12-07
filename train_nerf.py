@@ -10,12 +10,12 @@ from load_llff import load_llff_data
 CONFIG = {
     'expname': 'pesos_modelo', 
     'datadir': './data/nerf_llff_data/fern',
-    'factor': 2,      
+    'factor': 4,      
     'N_samples': 128,
-    'N_iters': 200000,          
+    'N_iters': 10000,          
     'batch_size': 4096,
     'lrate': 5e-4,
-    'i_val': 2000,
+    'i_val': 500,
     'layers': 8,
     'neurons': 256 
 }
