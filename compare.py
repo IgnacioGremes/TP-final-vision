@@ -9,9 +9,11 @@ from load_llff import load_llff_data
 CONFIG = {
     'model_path': './logs/pesos_modelo.pth',  # <--- Asegúrate que este sea tu modelo entrenado
     'datadir': './data/nerf_llff_data/fern',
-    'factor': 8, 
+    'factor': 4, 
     'N_samples': 128, 
-    'chunk': 32768
+    'chunk': 32768,
+    'layers': 8,
+    'neurons': 256
 }
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -84,7 +86,7 @@ def run_compare():
 
     # 2. Cargar Modelo
     embed_pts = Embedder(3, 10); embed_views = Embedder(3, 4)
-    model = FastNeRF(4, 128).to(device)
+    model = FastNeRF(CONFIG['layers'], CONFIG['neurons']).to(device)
     if os.path.exists(CONFIG['model_path']):
         model.load_state_dict(torch.load(CONFIG['model_path'], map_location=device))
     else:
