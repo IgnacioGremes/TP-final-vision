@@ -10,9 +10,11 @@ from load_llff import load_llff_data
 CONFIG = {
     'model_path': './logs/pesos_modelo.pth', # <--- ASEGURA QUE ESTE NOMBRE COINCIDA CON TU ARCHIVO GUARDADO
     'datadir': './data/nerf_llff_data/fern',
-    'factor': 8,       
+    'factor': 4,       
     'N_samples': 128,
     'chunk': 16384,     # Cantidad de rayos a procesar a la vez (para no llenar la memoria)
+    'layers': 8,
+    'neurons': 256
 }
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -87,7 +89,7 @@ def run_render():
     # 2. Cargar Modelo
     embed_pts = Embedder(input_dims=3, num_freqs=10)
     embed_views = Embedder(input_dims=3, num_freqs=4)
-    model = FastNeRF(D=4, W=128).to(device)
+    model = FastNeRF(D=CONFIG['layers'], W=CONFIG['neurons']).to(device)
     
     # Cargar pesos guardados
     if os.path.exists(CONFIG['model_path']):
