@@ -12,13 +12,13 @@ CONFIG = {
     'datadir': './data/nerf_llff_data/fern',
     'factor': 4,          
     'N_samples': 128,     
-    'N_iters': 10000,    
+    'N_iters': 100000,    
     'batch_size': 4096,
     'lrate': 5e-4,
-    'i_val': 500,        # Validar cada 1000 pasos
+    'i_val': 1000,        # Validar cada 1000 pasos
     'patience': 15,       # Early stopping
-    'layers': 4,
-    'neurons': 128
+    'layers': 8,
+    'neurons': 256
 }
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
