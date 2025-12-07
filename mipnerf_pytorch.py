@@ -47,8 +47,8 @@ class MipNeRF(nn.Module):
         self.embed_views = IntegratedEmbedder(input_dims=input_ch_views, num_freqs=4) # Viewdirs usa IPE simple (cov=0) o PE normal
         
         # Dims calculadas
-        in_ch_pts = input_ch * num_freqs * 2
-        in_ch_views = input_ch_views * 4 * 2
+        in_ch_pts = input_ch * num_freqs * 2 # 60
+        in_ch_views = input_ch_views * 4 * 2 # 24
         
         self.pts_linears = nn.ModuleList(
             [nn.Linear(in_ch_pts, W)] + 
